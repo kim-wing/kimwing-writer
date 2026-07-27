@@ -152,7 +152,3 @@ python3 scripts/check_prose.py <章节文件>
 - 对重大情节决策提供少量、有真实差异的方向；不要替作者虚构偏好。
 - 记录作者批准的选择与禁区，后续不得反复询问。
 - 未经要求，不把作品上传、发布到平台或调用外部模型服务。
-
-## 来源说明
-
-工作流参考并重新设计自 [EthanYoQ/AI-Novel-Writer](https://github.com/EthanYoQ/AI-Novel-Writer) 的本地优先长篇创作管线；本技能不依赖其 Electron 应用，也不复制其完整提示词。

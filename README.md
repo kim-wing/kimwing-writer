@@ -191,8 +191,6 @@ Kimwing Writer 不以规避检测为目标，也不会通过错别字或随机�
 发现机械模式 → 引用具体位置 → 确认作者意图 → 局部修改 → 复查正史
 ```
 
-## 来源与许可证
-
-工作流参考并重新设计自 [EthanYoQ/AI-Novel-Writer](https://github.com/EthanYoQ/AI-Novel-Writer) 的本地优先长篇创作管线。本项目不依赖其 Electron 应用，也未复制其完整提示词。
+## 许可证
 
 本项目采用 [GPL-3.0](LICENSE) 许可证。
