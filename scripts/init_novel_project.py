@@ -93,7 +93,7 @@ def main() -> int:
     write_json(
         root / "novel.json",
         {
-            "schemaVersion": 1,
+            "schemaVersion": 2,
             "title": args.title,
             "genre": args.genre,
             "style": args.style,
@@ -102,6 +102,7 @@ def main() -> int:
             "plannedChapters": args.planned_chapters,
             "wordsPerChapter": args.words_per_chapter,
             "batchLimit": 3,
+            "contentPolicy": "strict-clean",
             "status": "planning",
             "currentChapter": 0,
             "createdAt": now,
@@ -192,6 +193,21 @@ def main() -> int:
 - 核心意象：（待补充）
 - 刻意保留的不规则：（待补充）
 - 主要角色声音差异：（待补充）
+""",
+    )
+    write_text(
+        root / "style/content-boundaries.md",
+        """# 内容红线
+
+policy: strict-clean
+
+- 严禁色情露骨内容；正常克制的恋爱描写可以保留，亲密场景点到为止或淡出。
+- 严禁赌博及相关场所、下注、赌债、玩法和获利机制。
+- 严禁非法毒品及相关制造、交易、使用和美化。
+- 严禁现实或虚构政治人物、组织、事件、斗争、宣传和影射。
+- 严禁黑社会、帮派及其他有组织犯罪相关设定、人物和情节。
+
+命中任一项时停止该方向，使用不含禁区的关系、职业、自然环境、技术限制或个人选择冲突替代。
 """,
     )
     write_text(

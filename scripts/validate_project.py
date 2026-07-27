@@ -17,6 +17,7 @@ REQUIRED_FILES = [
     "architecture/world.md",
     "architecture/outline.md",
     "style/author-voice.md",
+    "style/content-boundaries.md",
     "style/negative-constraints.md",
     "memory/timeline.jsonl",
     "memory/character-states.json",
@@ -37,6 +38,7 @@ BLUEPRINT_FIELDS = {
     "characters",
     "knowledgeChanges",
     "continuityChecks",
+    "contentSafety",
     "endingPressure",
     "status",
 }
@@ -49,6 +51,14 @@ OPENING_HOOK_FIELDS = {
     "nextChapterPull",
 }
 OPENING_HOOK_STAGES = {1: "plant", 2: "deepen", 3: "partial-payoff"}
+CONTENT_SAFETY_FIELDS = {
+    "explicitSexualContent",
+    "gambling",
+    "illegalDrugs",
+    "politics",
+    "organizedCrime",
+}
+CONTENT_BOUNDARY_MARKERS = ("色情露骨", "赌博", "非法毒品", "政治", "黑社会")
 
 
 def parse_args() -> argparse.Namespace:
@@ -79,14 +89,17 @@ def validate_config(root: Path, errors: list[str], warnings: list[str]) -> None:
         "plannedChapters",
         "wordsPerChapter",
         "batchLimit",
+        "contentPolicy",
         "status",
         "currentChapter",
     }
     missing = sorted(required - config.keys())
     if missing:
         errors.append("novel.json 缺少字段：" + "、".join(missing))
-    if config.get("schemaVersion") != 1:
-        warnings.append(f"未知 schemaVersion：{config.get('schemaVersion')}")
+    if config.get("schemaVersion") != 2:
+        errors.append("novel.json 的 schemaVersion 必须是 2；请先执行内容红线迁移")
+    if config.get("contentPolicy") != "strict-clean":
+        errors.append("novel.json 的 contentPolicy 必须是 'strict-clean'")
     for field in ("plannedChapters", "wordsPerChapter", "batchLimit"):
         value = config.get(field)
         if not isinstance(value, int) or value <= 0:
@@ -119,6 +132,22 @@ def validate_jsonl(path: Path, errors: list[str]) -> None:
             errors.append(f"{path.name} 第 {number} 行必须是 JSON 对象")
 
 
+def validate_content_boundaries(root: Path, errors: list[str]) -> None:
+    path = root / "style/content-boundaries.md"
+    try:
+        content = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        errors.append(f"内容红线文件无法读取：{path}: {exc}")
+        return
+    if "policy: strict-clean" not in content:
+        errors.append("style/content-boundaries.md 缺少 'policy: strict-clean' 标记")
+    missing_markers = [marker for marker in CONTENT_BOUNDARY_MARKERS if marker not in content]
+    if missing_markers:
+        errors.append(
+            "style/content-boundaries.md 缺少红线类别：" + "、".join(missing_markers)
+        )
+
+
 def validate_blueprints(root: Path, errors: list[str], warnings: list[str]) -> None:
     seen: set[int] = set()
     opening_hooks: dict[int, dict[str, Any]] = {}
@@ -139,6 +168,24 @@ def validate_blueprints(root: Path, errors: list[str], warnings: list[str]) -> N
         expected = f"chapter-{number:04d}.json"
         if path.name != expected:
             warnings.append(f"蓝图文件名与章节编号不一致：{path.name}，建议 {expected}")
+        if "contentSafety" in data:
+            content_safety = data["contentSafety"]
+            if not isinstance(content_safety, dict):
+                errors.append(f"{path.name} 的 contentSafety 必须是对象")
+            else:
+                missing_safety_fields = sorted(
+                    CONTENT_SAFETY_FIELDS - content_safety.keys()
+                )
+                if missing_safety_fields:
+                    errors.append(
+                        f"{path.name} 的 contentSafety 缺少字段："
+                        + "、".join(missing_safety_fields)
+                    )
+                for field in sorted(CONTENT_SAFETY_FIELDS & content_safety.keys()):
+                    if content_safety.get(field) is not False:
+                        errors.append(
+                            f"{path.name} 的 contentSafety.{field} 必须是 false"
+                        )
         if number in OPENING_HOOK_STAGES:
             hook = data.get("openingHook")
             if not isinstance(hook, dict):
@@ -214,6 +261,7 @@ def main() -> int:
 
     if not errors:
         validate_config(root, errors, warnings)
+        validate_content_boundaries(root, errors)
         validate_json_container(root, "architecture/characters.json", "characters", errors)
         validate_json_container(root, "memory/character-states.json", "characters", errors)
         validate_json_container(root, "memory/foreshadowing.json", "items", errors)
