@@ -121,7 +121,7 @@ project/
     "explicitSexualContent": false,
     "gambling": false,
     "illegalDrugs": false,
-    "politics": false,
+    "modernRealWorldPolitics": false,
     "organizedCrime": false
   }
 }
@@ -156,4 +156,4 @@ planned -> drafted -> reviewed -> revised -> finalized
 3. 以最新 `finalized` 章节确定正史断点，不以文件修改时间猜测。
 4. 发现格式较旧时先备份并迁移，不在未知结构上批量写入。
 5. 若旧项目的前三章缺少 `openingHook`，先从定稿内容回填真实钩子推进，不为通过校验虚构未发生的线索。
-6. 将旧项目迁移到 `schemaVersion: 2` 时，先备份项目，再添加 `contentPolicy` 和 `style/content-boundaries.md`，逐章审查后回填 `contentSafety`；不要批量写入虚假的 `false`。
+6. 将旧项目迁移到 `schemaVersion: 2` 时，先备份项目，再添加 `contentPolicy` 和 `style/content-boundaries.md`，逐章审查后回填 `contentSafety`；不要批量写入虚假的 `false`。若蓝图使用旧字段 `politics`，将其替换为 `modernRealWorldPolitics`，并确认古代历史或无现实映射的虚构政治不属于命中项。

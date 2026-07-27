@@ -1,4 +1,4 @@
 interface:
   display_name: "Kimwing Writer"
-  short_description: "长篇连载、前三章钩子、严格内容红线与作者声纹管理"
+  short_description: "长篇连载、前三章钩子、现代现实政治红线与作者声纹管理"
   default_prompt: "使用 $kimwing-writer 创建遵守严格内容红线、包含前三章悬念钩子链的小说项目。"

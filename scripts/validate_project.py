@@ -55,10 +55,16 @@ CONTENT_SAFETY_FIELDS = {
     "explicitSexualContent",
     "gambling",
     "illegalDrugs",
-    "politics",
+    "modernRealWorldPolitics",
     "organizedCrime",
 }
-CONTENT_BOUNDARY_MARKERS = ("色情露骨", "赌博", "非法毒品", "政治", "黑社会")
+CONTENT_BOUNDARY_MARKERS = (
+    "色情露骨",
+    "赌博",
+    "非法毒品",
+    "现代现实政治",
+    "黑社会",
+)
 
 
 def parse_args() -> argparse.Namespace:
