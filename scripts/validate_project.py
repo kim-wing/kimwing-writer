@@ -41,6 +41,14 @@ BLUEPRINT_FIELDS = {
     "status",
 }
 VALID_STATUSES = {"planned", "drafted", "reviewed", "revised", "finalized"}
+OPENING_HOOK_FIELDS = {
+    "id",
+    "readerQuestion",
+    "stage",
+    "clueOrConsequence",
+    "nextChapterPull",
+}
+OPENING_HOOK_STAGES = {1: "plant", 2: "deepen", 3: "partial-payoff"}
 
 
 def parse_args() -> argparse.Namespace:
@@ -113,6 +121,7 @@ def validate_jsonl(path: Path, errors: list[str]) -> None:
 
 def validate_blueprints(root: Path, errors: list[str], warnings: list[str]) -> None:
     seen: set[int] = set()
+    opening_hooks: dict[int, dict[str, Any]] = {}
     for path in sorted((root / "blueprints").glob("chapter-*.json")):
         data = load_json(path, errors)
         if not isinstance(data, dict):
@@ -130,6 +139,29 @@ def validate_blueprints(root: Path, errors: list[str], warnings: list[str]) -> N
         expected = f"chapter-{number:04d}.json"
         if path.name != expected:
             warnings.append(f"蓝图文件名与章节编号不一致：{path.name}，建议 {expected}")
+        if number in OPENING_HOOK_STAGES:
+            hook = data.get("openingHook")
+            if not isinstance(hook, dict):
+                errors.append(f"{path.name} 的 openingHook 必须是对象")
+            else:
+                opening_hooks[number] = hook
+                missing_hook_fields = sorted(OPENING_HOOK_FIELDS - hook.keys())
+                if missing_hook_fields:
+                    errors.append(
+                        f"{path.name} 的 openingHook 缺少字段："
+                        + "、".join(missing_hook_fields)
+                    )
+                for field in sorted(OPENING_HOOK_FIELDS - {"stage"}):
+                    value = hook.get(field)
+                    if not isinstance(value, str) or not value.strip():
+                        errors.append(
+                            f"{path.name} 的 openingHook.{field} 必须是非空字符串"
+                        )
+                expected_stage = OPENING_HOOK_STAGES[number]
+                if hook.get("stage") != expected_stage:
+                    errors.append(
+                        f"{path.name} 的 openingHook.stage 必须是 {expected_stage!r}"
+                    )
         status = data.get("status")
         if status not in VALID_STATUSES:
             errors.append(f"{path.name} 的 status 无效：{status}")
@@ -144,6 +176,24 @@ def validate_blueprints(root: Path, errors: list[str], warnings: list[str]) -> N
             errors.append(f"{path.name} 状态为 {status}，但缺少 {chapter_dir / stage_files[status]}")
         if status == "finalized" and not (chapter_dir / "notes.md").is_file():
             errors.append(f"{path.name} 已定稿，但缺少 {chapter_dir / 'notes.md'}")
+
+    opening_chapters = set(OPENING_HOOK_STAGES)
+    if seen & opening_chapters:
+        missing_chapters = sorted(opening_chapters - seen)
+        if missing_chapters:
+            errors.append(
+                "开篇蓝图必须同时规划第 1–3 章；缺少第 "
+                + "、".join(str(number) for number in missing_chapters)
+                + " 章"
+            )
+        if opening_chapters <= opening_hooks.keys():
+            hook_ids = {
+                opening_hooks[number].get("id", "").strip()
+                for number in opening_chapters
+                if isinstance(opening_hooks[number].get("id"), str)
+            }
+            if len(hook_ids) != 1 or "" in hook_ids:
+                errors.append("第 1–3 章必须共享同一个非空 openingHook.id")
 
 
 def main() -> int:

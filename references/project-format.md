@@ -87,6 +87,28 @@ project/
 
 动态状态只写入 `memory/character-states.json`，不要把当前伤势或位置混入静态人物设定。
 
+## 章节蓝图与前三章钩子
+
+所有章节蓝图使用 `SKILL.md` 定义的基础字段。第 1–3 章还必须包含：
+
+```json
+{
+  "openingHook": {
+    "id": "opening-core-01",
+    "readerQuestion": "读者最想知道的具体问题",
+    "stage": "plant",
+    "clueOrConsequence": "本章新增的线索、排除项或可见后果",
+    "nextChapterPull": "继续阅读下一章的即时理由"
+  }
+}
+```
+
+- 三章的 `id` 必须相同，表示它们推进同一个核心好奇问题。
+- `stage` 按章节依次为 `plant`、`deepen`、`partial-payoff`。
+- 四个值都必须是非空字符串，不能用“待定”“之后揭晓”等占位语。
+- 第一章出现钩子后，第二章必须增加证据或代价，第三章必须给出部分答案或可验证后果。
+- 第 4 章以后可以省略 `openingHook`，继续使用 `endingPressure` 管理章末余压。
+
 ## 记忆规则
 
 - `timeline.jsonl`：每行一个已定稿事实，必须含 `chapter`、`sequence`、`event`、`consequence`。
@@ -113,3 +135,4 @@ planned -> drafted -> reviewed -> revised -> finalized
 2. 读取 `novel.json` 和当前任务所需资产。
 3. 以最新 `finalized` 章节确定正史断点，不以文件修改时间猜测。
 4. 发现格式较旧时先备份并迁移，不在未知结构上批量写入。
+5. 若旧项目的前三章缺少 `openingHook`，先从定稿内容回填真实钩子推进，不为通过校验虚构未发生的线索。

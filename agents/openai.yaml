@@ -1,4 +1,4 @@
 interface:
   display_name: "Kimwing Writer"
-  short_description: "面向长篇连载的小说架构、创作、审稿和作者化文风管理"
-  default_prompt: "使用 $kimwing-writer 从一个故事灵感创建可持续连载的小说项目。"
+  short_description: "长篇连载架构、前三章钩子、创作审稿与作者声纹管理"
+  default_prompt: "使用 $kimwing-writer 从一个故事灵感创建小说项目，并设计前三章悬念钩子链。"
